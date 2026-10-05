@@ -57,61 +57,6 @@ class DinoVisionTransformer_v2(nn.Module):
     def forward(self, x):
         x = self.transformer(x)
         return x
-    
-
-    def prepare_tokens_with_masks(self, x, cls_token, masks=None):
-        B, nc, w, h = x.shape
-        x = self.transformer.patch_embed(x)
-        if masks is not None:
-            x = torch.where(masks.unsqueeze(-1), self.transformer.mask_token.to(x.dtype).unsqueeze(0), x)
-
-        if cls_token.shape[0] == 1:
-            x = torch.cat((cls_token.expand(x.shape[0], -1, -1), x), dim=1)
-        else:
-            x = torch.cat((cls_token, x), dim=1)
-        x = x + self.transformer.interpolate_pos_encoding(x, w, h)
-
-        if self.transformer.register_tokens is not None:
-            x = torch.cat(
-                (
-                    x[:, :1],
-                    self.transformer.register_tokens.expand(x.shape[0], -1, -1),
-                    x[:, 1:],
-                ),
-                dim=1,
-            )
-
-        return x
-
-
-    def encode_clstoken(self, x, cls_token, masks=None):
-
-        x = self.prepare_tokens_with_masks(x, cls_token, masks)
-
-        for blk in self.transformer.blocks:
-            x = blk(x)
-
-        x_norm = self.transformer.norm(x)
-        return x_norm[:, 0]
-    
-    
-    def get_midfeatures(self, x, k=2):
-
-        x = self.prepare_tokens_with_masks(x, self.transformer.cls_token, masks=None)
-
-        for blk in self.transformer.blocks[:-k]:
-            x = blk(x)
-
-        return x
-    
-    def get_features(self, x, k=2):
-        
-        for blk in self.transformer.blocks[-k:]:
-            x = blk(x)
-        
-        x_norm = self.transformer.norm(x)
-        return x_norm[:, 0]
-
 
 
 

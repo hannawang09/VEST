@@ -245,60 +245,6 @@ class VisualTransformer(nn.Module):
 
         return x
 
-    def kblocks_forward(self, x: torch.Tensor, k=2):
-        """
-        Forward pass through the first len(blocks)-k blocks of the transformer.
-        """
-        x = self.conv1(x)  # shape = [*, width, grid, grid]
-        x = x.reshape(x.shape[0], x.shape[1], -1)  # shape = [*, width, grid ** 2]
-        x = x.permute(0, 2, 1)  # shape = [*, grid ** 2, width]
-        x = torch.cat(
-            [self.class_embedding.to(x.dtype) + torch.zeros(x.shape[0], 1, x.shape[-1], dtype=x.dtype, device=x.device),
-             x], dim=1)  # shape = [*, grid ** 2 + 1, width]
-        x = x + self.positional_embedding.to(x.dtype)
-        x = self.ln_pre(x)
-
-        x = x.permute(1, 0, 2)  # NLD -> LND
-        for blk in self.transformer.resblocks[:-k]:
-            x = blk(x)
-
-        return x
-
-    
-    def forward_token(self, x: torch.Tensor, cls_token: torch.Tensor):
-        x = self.conv1(x)  # shape = [*, width, grid, grid]
-        x = x.reshape(x.shape[0], x.shape[1], -1)  # shape = [*, width, grid ** 2]
-        x = x.permute(0, 2, 1)  # shape = [*, grid ** 2, width]
-        x = torch.cat([cls_token.to(x.dtype), x], dim=1)  # shape = [*, grid ** 2 + 1, width]
-        x = x + self.positional_embedding.to(x.dtype)
-        x = self.ln_pre(x)
-
-        x = x.permute(1, 0, 2)  # NLD -> LND
-        x = self.transformer(x)
-        x = x.permute(1, 0, 2)  # LND -> NLD
-
-        x = self.ln_post(x[:, 0, :])
-
-        if self.proj is not None:
-            x = x @ self.proj
-
-        return x
-
-    def restblocks_forward(self, x: torch.Tensor, k=2):
-        """
-        Forward pass through the last k blocks of the transformer.
-        """
-        for blk in self.transformer.resblocks[-k:]:
-            x = blk(x)
-
-        x = x.permute(1, 0, 2)  # LND -> NLD
-        x = self.ln_post(x[:, 0, :])
-
-        if self.proj is not None:
-            x = x @ self.proj
-
-        return x
-
 
 class CLIP(nn.Module):
     def __init__(self,
@@ -428,16 +374,7 @@ class CLIP(nn.Module):
         text_features = text_features / text_features.norm(dim=-1, keepdim=True)
 
         return image_features, text_features, self.logit_scale.exp()
-
-    def get_midfeatures(self, image, k=2):
-        return self.visual.kblocks_forward(image.type(self.dtype), k=k)
-
-    def get_features(self, midfeatures, k=2):
-        return self.visual.restblocks_forward(midfeatures, k=k)
-
-    def encode_clstoken(self, image, cls_token):
-        return self.visual.forward_token(image.type(self.dtype), cls_token=cls_token)
-
+    
 
 def convert_weights(model: nn.Module):
     """Convert applicable model parameters to fp16"""

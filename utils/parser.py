@@ -34,10 +34,6 @@ def parse_args():
                         help='Method for training.')
     parser.add_argument('--training_seed', type=int, default=1, help='Random seeds for training.')
     parser.add_argument('--ft_topk_blks', type=int, default=-1, help='finetune top-k blocks, -1 means all blocks.')
-    parser.add_argument('--add_ap_stage1', default=False, action='store_true', help='add adversarial perturbation to the cls token.')
-    parser.add_argument('--eps_stage1', type=float, default=0, help='perturbation epsilon.')
-    parser.add_argument('--add_ap_stage2', default=False, action='store_true', help='add adversarial perturbation to the cls token.')
-    parser.add_argument('--eps_stage2', type=float, default=0, help='perturbation epsilon.')
     parser.add_argument('--cls_init', type=str, default='openai', choices=['random', 'openai', 'lp'],
                         help='Initialize the classifier head in different ways.')
     parser.add_argument('--cls_path', default=None, type=str, help='classifier path to start training from.')

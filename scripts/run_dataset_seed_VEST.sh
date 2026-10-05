@@ -89,8 +89,7 @@ for dataset in "${datasets[@]}"; do
                         --epochs "$epochs" --bsz "$batch_size" --log_mode "$log_mode" \
                         --lr_backbone "$lr_backbone" --lr_classifier "$lr_classifier" --wd "$wd" \
                         --warmup_lr "$warmup_lr" --warmup_iter "$warmup_iter" --folder "$output_folder" \
-                        --ft_topk_blks "$ft_topk_blks" --add_ap_stage2 --eps_stage2 "$eps_stage2" \
-                        --val_type "$val_type" --early_stop --save_ckpt --save_freq 1
+                        --ft_topk_blks "$ft_topk_blks" --val_type "$val_type" --early_stop --save_ckpt --save_freq 1
                         )
 
                         # Print the output to the console

@@ -6,7 +6,7 @@ from utils.logger import set_logger
 from utils.testing import test, ood_test
 import copy
 import torch.nn as nn
-from utils.training import set_training_seed, run_zeroshot, train_ce, train_ce_ap
+from utils.training import set_training_seed, run_zeroshot, train_ce
 from utils.optimizer import set_optimizer, set_params
 from utils.scheduler import build_lr_scheduler
 from utils.features import pre_extract_feature, get_dataloader_preextracted
@@ -83,7 +83,7 @@ def run_stage1_finetuning(args, logger, model, classifier, train_preprocess, tes
     # check zeroshot acc
     if args.check_zeroshot or args.method == 'zeroshot':
         logger.info(f"Check Zero-shot Acc ......")
-        zs_test_acc = run_zeroshot(args, val_dataloader, model, logger, classifier, is_encoder)
+        zs_test_acc = run_zeroshot(args, test_dataloader, model, logger, classifier, is_encoder)
         acc_list = ood_test(args, model, classifier, test_preprocess, logger, is_encoder)
 
     if args.method == 'zeroshot':
@@ -96,18 +96,7 @@ def run_stage1_finetuning(args, logger, model, classifier, train_preprocess, tes
         return -1, None
 
     #---------- Training
-    if args.method == 'finetune':
-        if args.add_ap_stage1:
-            best_model, best_head, \
-                best_records, best_logit_scale = train_ce_ap(args, logger, loss_logger, model, classifier, 
-                                                             train_dataloader, val_dataloader, eps=args.eps_stage1,
-                                                             test_preprocess=test_preprocess, is_encoder=is_encoder)
-        else:
-            best_model, best_head, \
-                best_records, best_logit_scale = train_ce(args, logger, loss_logger, model, classifier, 
-                                                          train_dataloader, val_dataloader, test_preprocess,
-                                                          is_encoder)
-    elif args.method == 'lp':
+    if args.method == 'finetune' or args.method == 'lp':
         best_model, best_head, \
             best_records, best_logit_scale = train_ce(args, logger, loss_logger, model, classifier, 
                                                       train_dataloader, val_dataloader, test_preprocess,
@@ -207,16 +196,10 @@ def run_stage2_FSFT(model, classifier, stage1_best_model_path, train_preprocess)
     args.scheduler = scheduler
 
     #---------- Training
-    if args.add_ap_stage2:
-        best_model, best_head, \
-            best_records, best_logit_scale = train_ce_ap(args, logger, loss_logger, model, classifier, 
-                                                         train_dataloader, val_dataloader, eps=args.eps_stage2,
-                                                         test_preprocess=test_preprocess, is_encoder=is_encoder)
-    else:
-        best_model, best_head, \
-            best_records, best_logit_scale = train_ce(args, logger, loss_logger, model, classifier, 
-                                                      train_dataloader, val_dataloader, test_preprocess,
-                                                      is_encoder)
+    best_model, best_head, \
+        best_records, best_logit_scale = train_ce(args, logger, loss_logger, model, classifier, 
+                                                    train_dataloader, val_dataloader, test_preprocess,
+                                                    is_encoder)
 
     # test the best model after FSFT
     test_acc = test(args, dataloader=test_dataloader, model=best_model, classifier=best_head, 

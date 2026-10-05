@@ -16,13 +16,14 @@
 </div>
 
 
-Few-Shot Recognition (FSR) tackles classification tasks by training with minimal task-specific labeled data. Prevailing methods adapt or finetune a pretrained Vision-Language Model (VLM) generalizes decently well to the task-specific in-distribution (ID) test data but struggles with out-of-distribution (OOD) test data.
+We introduce <b>gF1</b>, a validation method that repurposes retrieved OOD data for checkpoint selection and hyperparameter tuning in few-shot recognition. We further integrate gF1 into <b>VEST</b> (<b>V</b>alidation-<b>E</b>nabled <b>S</b>tage-wise <b>T</b>uning), a stage-wise finetuning pipeline that improves both ID and OOD generalization.
 
-We introduce a novel validation strategy that harmonizes <em>performance gain</em> and <em>degradation</em> on the few-shot ID data and the retrieved data, respectively. Our validation enables parameter selection for partial finetuning and checkpoint selection, mitigating overfitting and improving test-data generalization. We unify this strategy with robust learning techniques into a cohesive framework: <b>V</b>alidation-<b>E</b>nabled <b>S</b>tage-wise <b>T</b>uning (<b>VEST</b>).
 
 
 <div align='center'>
-    <img src='asset/overview.png' alt='overview' width=50%>
+    <img src='asset/gF1.png' alt='gF1' style="height:170px; width:auto;">
+    &nbsp;&nbsp;&nbsp;
+    <img src='asset/performance.png' alt='performance' style="height:170px; width:auto;">
 </div>
 
 
@@ -48,7 +49,7 @@ Please follow the instructions in [DATASET.md](DATASETS.md) to prepare the datas
 
 ## Training and Testing
 1. Update your data path and retrieved data path in `config.yml`.
-2. Runing script 
+2. Running script 
     - For **Validation-Enabled Stage-wise Tuning (VEST)**, use the following command:
     ```
     bash scripts/run_dataset_seed_VEST.sh imagenet [data_seed] [ft_top_X_block]
@@ -59,13 +60,7 @@ Please follow the instructions in [DATASET.md](DATASETS.md) to prepare the datas
     ```
     bash scripts/run_dataset_seed_PFT.sh imagenet [data_seed] [ft_top_X_block]
     ```
-    - For **Partial Finetuning with Adversarial Perturbation (PFT w/ AP)**, use the following command:
-    ```
-    bash scripts/run_dataset_seed_PFT_w_AP.sh imagenet [data_seed] [ft_top_X_block]
-    
-    # In our experiments, we set eps to 3e-2 when partially finetuning the pretrained model and 7e-3 in stage-2 of VEST.
-    ```
-    
+
     > Note: The default model is CLIP. To finetune the DINOv2 model instead, please update the `model_cfg` in scripts.
 
 
@@ -81,19 +76,10 @@ We provide demos of model training and evaluation.
 
 
 
-## Performance
-<div align='center'>
-    <img src='asset/performance.png' alt='performance' width=50%>
-</div>
-
-
 
 ## Acknowledgments
 
 Our code is built on [LCA-on-the-line(ICML'24)](https://github.com/ElvishElvis/LCA-on-the-line) and [SWAT(CVPR'25)](https://github.com/tian1327/SWAT).
-
-We also thank [torchattacks](https://github.com/Harry24k/adversarial-attacks-pytorch) providing `attack.py` in our work.
-
 
 
 ## Citation
