@@ -16,7 +16,7 @@
 </div>
 
 
-We introduce <b>gF1</b>, a validation method that repurposes retrieved OOD data for checkpoint selection and hyperparameter tuning in few-shot recognition. We further integrate gF1 into <b>VEST</b> (<b>V</b>alidation-<b>E</b>nabled <b>S</b>tage-wise <b>T</b>uning), a stage-wise finetuning pipeline that improves both ID and OOD generalization.
+We introduce <b>gF1</b>, a novel validation method that repurposes retrieved OOD data for checkpoint selection and hyperparameter tuning in few-shot recognition. We further integrate gF1 into <b>VEST</b> (<b>V</b>alidation-<b>E</b>nabled <b>S</b>tage-wise <b>T</b>uning), a stage-wise finetuning pipeline that improves both ID and OOD peformance.
 
 
 
